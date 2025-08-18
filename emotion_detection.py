@@ -31,4 +31,3 @@ def emotion_detector(text_to_analyse):
     else:
         return {"error": f"Request failed with status {response.status_code}"}
 
-print(emotion_detector(" I am so happy I am doing this."))
