@@ -1,33 +1,52 @@
-
 #The File contains the Emotion Detector function that Analyze text 
 import json
 import requests
 
 def emotion_detector(text_to_analyse):
+    
+
     url = 'https://sn-watson-emotion.labs.skills.network/v1/watson.runtime.nlp.v1/NlpService/EmotionPredict'
-    input_json = { "raw_document": { "text": text_to_analyse } }
+    input_json = {"raw_document": {"text": text_to_analyse}}
     header = {"grpc-metadata-mm-model-id": "emotion_aggregated-workflow_lang_en_stock"}
     response = requests.post(url, json=input_json, headers=header)
-    
+    print("response status code is:",response.status_code)
+
     if response.status_code == 200:
-        json_response = response.json()   # better than json.loads(response.text)
-        
-        # drill into the nested structure
+        json_response = response.json()
         emotions_dict = json_response["emotionPredictions"][0]["emotion"]
-        
-        # find the dominant emotion (max score)
         dominant = max(emotions_dict, key=emotions_dict.get)
         
-        emotions = {
+        return {
+            'status': 200,
             'anger': emotions_dict.get('anger'),
             'disgust': emotions_dict.get('disgust'),
             'fear': emotions_dict.get('fear'),
             'joy': emotions_dict.get('joy'),
             'sadness': emotions_dict.get('sadness'),
-            'dominant_emotion': dominant
+            'dominant_emotion': dominant,
+            'error': None
         }
-        
-        return emotions
-    else:
-        return {"error": f"Request failed with status {response.status_code}"}
 
+    elif response.status_code == 400:
+        return {
+            'status': 400,
+            'anger': None,
+            'disgust': None,
+            'fear': None,
+            'joy': None,
+            'sadness': None,
+            'dominant_emotion': None,
+            'error': "Invalid text! Please try again."
+        }
+
+    else:
+        return {
+            'status': response.status_code,
+            'anger': None,
+            'disgust': None,
+            'fear': None,
+            'joy': None,
+            'sadness': None,
+            'dominant_emotion': None,
+            'error': f"Unexpected error ({response.status_code})"
+        }
